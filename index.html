@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MILEWA — AI-Native SDLC · Tools for New Workflows</title>
+  <meta name="description" content="MILEWA — the AI-Native SDLC framework. Lightweight and Enterprise on-ramps covering Requirements, Architecture, Context, Orchestration, and Testing." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #ffffff; --bg-soft: #fbfafe; --tint: #f4f0ff;
+      --ink: #07123d; --ink-2: #3e4666; --ink-3: #667097; --ink-4: #8b91aa;
+      --line: #e5e0f3; --line-2: #cfc4ea;
+      --purple: #7b4cff; --purple-d: #5524b8; --purple-l: #b9a3ff;
+      --grad: linear-gradient(120deg, #5524b8 0%, #c026d3 50%, #0891b2 100%);
+      --r-md: 14px; --r-lg: 20px;
+      --t: .2s ease-out;
+    }
+    html, body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+    body       { background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+    code, pre, .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+    section { scroll-margin-top: 80px; }
+
+    .grad-text {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      /* compensate for italic overhang so gradient + trailing punctuation render fully */
+      padding-right: .08em;
+      -webkit-box-decoration-break: clone;
+              box-decoration-break: clone;
+    }
+    .grad-text.italic { padding-right: .12em; }
+    .halo      { position: absolute; filter: blur(120px); pointer-events: none; border-radius: 9999px; opacity: .55; }
+
+    .glow-frame { position: relative; }
+    .glow-frame::before {
+      content: ''; position: absolute; inset: 0; padding: 1.5px; border-radius: inherit;
+      background: linear-gradient(135deg, rgba(123,76,255,.55), rgba(217,70,239,.35) 40%, rgba(8,145,178,.55));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+              mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+    }
+
+    .card {
+      background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-lg);
+      box-shadow: 0 1px 2px rgba(7,18,61,.04), 0 12px 30px -12px rgba(7,18,61,.08);
+      transition: transform var(--t), border-color var(--t), box-shadow var(--t);
+    }
+    .card-hover:hover {
+      transform: translateY(-2px); border-color: var(--line-2);
+      box-shadow: 0 18px 40px -12px rgba(123,76,255,.18);
+    }
+
+    .eyebrow   { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: var(--purple-d); }
+    .h-section { font-size: clamp(1.875rem, 1.2rem + 2.5vw, 3rem); font-weight: 800; letter-spacing: -.025em; line-height: 1.05; }
+    .lede      { font-size: clamp(1rem, .96rem + .25vw, 1.0625rem); color: var(--ink-2); line-height: 1.65; }
+
+    .btn { display: inline-flex; align-items: center; gap: .5rem; padding: 0 24px; height: 48px; border-radius: var(--r-md); font-size: 15px; font-weight: 700; transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t), filter var(--t); }
+    .btn-sm { height: 36px; padding: 0 14px; font-size: 13px; border-radius: 10px; }
+    .btn-primary { background: linear-gradient(120deg, #5524b8, #7b4cff 40%, #0891b2); color: #fff; box-shadow: 0 12px 32px -10px rgba(85,36,184,.45); }
+    .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .btn-outline { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+    .btn-outline:hover { border-color: var(--purple-l); background: var(--bg-soft); }
+
+    .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; background: var(--tint); border: 1px solid var(--line); font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; color: var(--purple-d); text-decoration: none; transition: all var(--t); }
+    .chip:hover { background: #eee8ff; border-color: var(--purple-l); }
+    .chip--cyan       { background: #ecfeff; color: #0e7490; border-color: #cffafe; }
+    .chip--cyan:hover { background: #cffafe; border-color: #67e8f9; }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 7px; font-size: 11px; font-weight: 600; border: 1px solid; }
+    .badge--on   { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+    .badge--off  { background: #fbfafe; border-color: var(--line); color: var(--ink-4); }
+    .badge--warn { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+
+    .mat-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; border: 1px solid; }
+    .mat-alpha { background: #fff7ed; border-color: #fdba74; color: #c2410c; }
+    .mat-beta  { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+    .mat-pilot { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+
+    /* phase pipeline */
+    .phase-pipeline { position: relative; }
+    .phase-pipeline::before {
+      content: ''; position: absolute; left: 8%; right: 8%; top: 86px;
+      height: 2px; background: linear-gradient(90deg, transparent, var(--line-2) 15%, var(--line-2) 85%, transparent);
+      z-index: 0; display: none;
+    }
+    @media (min-width: 768px) { .phase-pipeline::before { display: block; } }
+
+    .phase-card {
+      position: relative; z-index: 1;
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: 16px; padding: 18px;
+      transition: transform var(--t), border-color var(--t), box-shadow var(--t);
+      display: flex; flex-direction: column;
+    }
+    .phase-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--purple-l);
+      box-shadow: 0 14px 32px -10px rgba(123,76,255,.18);
+    }
+    .phase-card .num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; font-weight: 700;
+      color: var(--purple-d); letter-spacing: .12em;
+    }
+    .phase-card .icon-wrap {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: var(--bg-soft); border: 1px solid var(--line);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ink-3);
+    }
+    .phase-card h4 {
+      font-size: 15px; font-weight: 800; letter-spacing: -.01em;
+      color: var(--ink); margin-top: 8px;
+    }
+
+    .lane { border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 12px; }
+    .lane-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 9.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .14em;
+      margin-bottom: 8px;
+    }
+    .lane-label .dot { width: 6px; height: 6px; border-radius: 999px; }
+    .lane-light .lane-label { color: #0e7490; }
+    .lane-light .lane-label .dot { background: #06b6d4; }
+    .lane-ent   .lane-label { color: var(--purple-d); }
+    .lane-ent   .lane-label .dot { background: var(--purple); }
+
+    .lane-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+    .lane-empty {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11.5px; color: var(--ink-4); font-style: italic;
+    }
+    .lane-empty .icon { color: var(--line-2); }
+    .lane-warn {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 600;
+      color: #b45309; background: #fffbeb;
+      border: 1px solid #fde68a;
+      padding: 1px 6px; border-radius: 999px;
+      margin-left: 4px;
+    }
+
+    /* tool card */
+    .tool-card { position: relative; overflow: hidden; padding: 24px; display: flex; flex-direction: column; }
+    .tool-card .accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .tool-card h3 { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+    .tool-card .field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; margin-bottom: 4px; }
+    .tool-card .field { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+    .tool-card .field + .field { margin-top: 12px; }
+    .tool-card .divider { height: 1px; background: var(--line); margin: 18px 0 14px; }
+
+    /* how-it-works stages */
+    .stage-item { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; }
+    .stage-item + .stage-item { border-top: 1px dashed var(--line); }
+    .stage-num {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 700;
+      color: var(--ink-2);
+    }
+    .stage-num-accent {
+      background: linear-gradient(135deg, var(--purple), #06b6d4);
+      border-color: transparent;
+      color: #fff;
+    }
+    .stage-optional .stage-num {
+      border-style: dashed;
+      background: transparent;
+      color: var(--ink-4);
+    }
+    .stage-optional .stage-name { color: var(--ink-3); }
+    .stage-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .stage-desc { font-size: 12px; color: var(--ink-3); margin-top: 1px; }
+    .opt-pill {
+      display: inline-block; margin-left: 6px;
+      padding: 1px 5px; border-radius: 4px;
+      background: var(--bg-soft); border: 1px dashed var(--line);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px; font-weight: 700; letter-spacing: .08em;
+      color: var(--ink-4); text-transform: uppercase;
+    }
+
+    /* progressive disclosure */
+    .tool-details { margin-top: 14px; }
+    .tool-details summary {
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg-soft);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-2);
+      user-select: none;
+      transition: all var(--t);
+    }
+    .tool-details summary:hover {
+      background: var(--tint);
+      border-color: var(--purple-l);
+      color: var(--ink);
+    }
+    .tool-details summary:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+    .tool-details summary::-webkit-details-marker { display: none; }
+    .tool-details summary::marker { content: ""; }
+    .tool-details .chevron { transition: transform .2s ease-out; flex-shrink: 0; width: 14px; height: 14px; }
+    .tool-details[open] .chevron { transform: rotate(180deg); }
+    .tool-body { margin-top: 18px; animation: fadeSlide .25s ease-out; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tool-body { animation: none; }
+      .tool-details .chevron { transition: none; }
+    }
+
+    .acc-po       { color: #6b35d8; } .acc-po       .accent { background: linear-gradient(90deg, #6b35d8, #d946ef); }
+    .acc-expert   { color: #5524b8; } .acc-expert   .accent { background: linear-gradient(90deg, #5524b8, #ec4899); }
+    .acc-deepscan { color: #4f68ff; } .acc-deepscan .accent { background: linear-gradient(90deg, #4f68ff, #22d3ee); }
+    .acc-claud    { color: #7a45e6; } .acc-claud    .accent { background: linear-gradient(90deg, #7a45e6, #b9a3ff); }
+    .acc-worca    { color: #8e4deb; } .acc-worca    .accent { background: linear-gradient(90deg, #8e4deb, #06b6d4); }
+    .acc-qtea     { color: #0e7490; } .acc-qtea     .accent { background: linear-gradient(90deg, #06b6d4, #7b4cff, #ec4899); }
+
+    .nav-link        { transition: color var(--t); position: relative; }
+    .nav-link.active { color: var(--ink); }
+    .nav-link.active::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: -22px;
+      height: 2px; background: var(--grad); border-radius: 2px;
+    }
+
+    :focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; border-radius: 6px; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--purple-l); }
+    ::selection { background: rgba(123,76,255,.18); color: var(--ink); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card-hover, .btn { transition: none; }
+      .card-hover:hover, .btn:hover { transform: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═════════ HEADER ═════════ -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-[var(--line)]">
+    <nav class="max-w-7xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between" aria-label="Primary">
+      <a href="#top" class="flex items-center gap-3">
+        <img src="milewa-m.png" alt="MILEWA logo" class="h-11 w-auto" />
+        <span class="hidden sm:inline text-[11px] uppercase tracking-[0.16em] text-[var(--ink-3)] font-semibold pl-3 border-l border-[var(--line)]">AI-Native SDLC</span>
+      </a>
+      <div class="hidden md:flex items-center gap-6 text-sm text-[var(--ink-3)] font-medium">
+        <a href="#about"        class="nav-link hover:text-[var(--ink)]" data-section="about">About</a>
+        <a href="#approaches"   class="nav-link hover:text-[var(--ink)]" data-section="approaches">Approaches</a>
+        <a href="#tools"        class="nav-link hover:text-[var(--ink)]" data-section="tools">Tools</a>
+        <a href="#how-it-works" class="nav-link hover:text-[var(--ink)]" data-section="how-it-works">Workflow</a>
+        <a href="#start"        class="nav-link hover:text-[var(--ink)]" data-section="start">Community</a>
+      </div>
+      <div class="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-[var(--line)] bg-[var(--bg-soft)] text-[12px] font-semibold text-[var(--ink-2)]" title="Open-sourced inside Bosch by BD/XD-SW">
+        <span class="w-2 h-2 rounded-full bg-gradient-to-br from-[#7b4cff] via-fuchsia-500 to-cyan-500 shrink-0"></span>
+        <span class="hidden sm:inline">Built at <span class="text-[var(--ink)] font-bold mono text-[11px]">BD/XD-SW</span> · for Bosch</span>
+        <span class="sm:hidden mono text-[11px] text-[var(--ink)] font-bold">BD/XD-SW</span>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- ═════════ HERO ═════════ -->
+    <section class="relative overflow-hidden py-24 md:py-32">
+      <div class="halo w-[520px] h-[520px] -top-40 -right-32" style="background:rgba(123,76,255,.25)"></div>
+      <div class="halo w-[440px] h-[440px] -bottom-40 -left-32" style="background:rgba(34,211,238,.20)"></div>
+
+      <div class="relative max-w-5xl mx-auto px-6 md:px-10 text-center">
+        <span class="inline-flex items-center gap-2 px-3 h-8 rounded-full border border-[var(--line)] bg-white/70 backdrop-blur text-xs font-semibold text-[var(--purple-d)]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[var(--purple)]"></span>
+          <span class="tracking-wide">v0.1 · MILEWA · AI-Native SDLC</span>
+        </span>
+
+        <h1 class="mt-8 font-extrabold tracking-tight text-5xl md:text-7xl leading-[1.04]">
+          Stop <span class="grad-text italic">prompting</span>.<br class="hidden sm:block">
+          Start <span class="grad-text italic">orchestrating</span>.
+        </h1>
+
+        <p class="mt-6 max-w-2xl mx-auto text-base md:text-lg text-[var(--ink-2)] leading-relaxed">
+          Autonomous, <span class="font-semibold text-[var(--ink)]">agent-driven SDLC</span>.
+          With humans <span class="font-semibold text-[var(--ink)]">on the gate, not in the loop</span>.
+        </p>
+
+        <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="https://github.com/BD-AI-SDLC" target="_blank" rel="noreferrer" class="btn btn-primary group">
+            <i data-lucide="github" class="w-[18px] h-[18px]"></i>
+            <span>Explore on GitHub</span>
+            <i data-lucide="arrow-right" class="w-[18px] h-[18px] transition-transform group-hover:translate-x-0.5"></i>
+          </a>
+          <a href="#approaches" class="btn btn-outline">
+            <i data-lucide="layers" class="w-[18px] h-[18px]"></i>
+            <span>Compare approaches</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ ABOUT ═════════ -->
+    <section id="about" class="py-20 md:py-24 bg-[var(--bg-soft)]">
+      <div class="max-w-6xl mx-auto px-6 md:px-10 grid lg:grid-cols-5 gap-10 lg:gap-14 items-start">
+        <div class="lg:col-span-2">
+          <span class="eyebrow">About AI-Native SDLC</span>
+          <h2 class="h-section mt-3">A framework, <span class="grad-text">not another assistant</span>.</h2>
+        </div>
+        <div class="lg:col-span-3 space-y-5 lede">
+          <p>
+            MILEWA re-architects the full software delivery loop — Requirements, Architecture, Context Onboarding, Orchestration, and Testing — around <span class="text-[var(--ink)] font-semibold">autonomous agents</span> and <span class="text-[var(--ink)] font-semibold">event-driven context</span>. Each phase is owned by one purpose-built tool.
+          </p>
+          <p>
+            Two on-ramps let your team adopt at its own pace. <span class="text-[var(--ink)] font-semibold">Lightweight</span> for teams getting started with context and learning; <span class="text-[var(--ink)] font-semibold">Enterprise-grade</span> for teams demanding autonomy, governance, and on-prem LLMs.
+          </p>
+          <a href="https://github.com/BD-AI-SDLC" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 text-sm font-semibold text-[var(--purple-d)] hover:text-[var(--ink)] transition-colors">
+            <i data-lucide="github" class="w-4 h-4"></i> github.com/BD-AI-SDLC
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ APPROACHES ═════════ -->
+    <section id="approaches" class="py-20 md:py-24 bg-[var(--bg-soft)]">
+      <div class="max-w-6xl mx-auto px-6 md:px-10">
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="eyebrow">Tools overview · how to start</span>
+          <h2 class="h-section mt-3">Two approaches. <span class="grad-text">One framework.</span></h2>
+          <p class="lede mt-5">Pick the on-ramp that fits your team's experience and operational constraints.</p>
+        </div>
+
+        <div class="mt-12 grid md:grid-cols-2 gap-5">
+          <article class="card p-7 relative overflow-hidden">
+            <span class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-[#7b4cff]"></span>
+            <div class="flex items-center gap-3 mb-4 pt-2">
+              <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-700">
+                <i data-lucide="feather" class="w-5 h-5"></i>
+              </span>
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-[0.16em] text-cyan-700">Lightweight</div>
+                <div class="text-[12px] text-[var(--ink-3)] font-medium">focus · Claude Code</div>
+              </div>
+            </div>
+            <h3 class="text-xl font-extrabold tracking-tight">Context &amp; learning, fast.</h3>
+            <p class="mt-3 text-sm text-[var(--ink-2)] leading-relaxed">
+              <span class="font-semibold text-[var(--ink)]">Wins on:</span> setup simplicity, cost, footprint, brownfield analysis, team-shareable artifacts, low learning curve.
+            </p>
+            <p class="mt-2 text-xs text-[var(--ink-3)] italic">For teams who want context and learning.</p>
+            <div class="mt-5 pt-5 border-t border-[var(--line)]">
+              <div class="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ink-4)] mb-3">Tools included</div>
+              <div class="flex flex-wrap gap-1.5">
+                <a href="https://github.com/BD-AI-SDLC/po-piie" target="_blank" rel="noreferrer" class="chip">po-piie · Requirements</a>
+                <a href="https://github.com/BD-AI-SDLC/claudboard" target="_blank" rel="noreferrer" class="chip chip--cyan">claudboard CLI · Orchestrator</a>
+                <a href="https://github.com/BD-AI-SDLC/qtea" target="_blank" rel="noreferrer" class="chip">QTea · Testing <i data-lucide="alert-triangle" class="w-3 h-3 text-amber-500"></i></a>
+              </div>
+              <p class="mt-3 text-[11px] text-[var(--ink-4)] italic">Grooming &amp; context onboarding are embedded inside ClaudBoard's workflow.</p>
+            </div>
+          </article>
+
+          <article class="glow-frame card p-7 relative overflow-hidden">
+            <span class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#5524b8] via-fuchsia-500 to-[#7b4cff]"></span>
+            <div class="flex items-center gap-3 mb-4 pt-2">
+              <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#7b4cff] to-fuchsia-500 text-white">
+                <i data-lucide="building-2" class="w-5 h-5"></i>
+              </span>
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--purple-d)]">Enterprise-grade</div>
+                <div class="text-[12px] text-[var(--ink-3)] font-medium inline-flex items-center gap-1">
+                  focus · Claude Code + On-Prem LLMs
+                  <i data-lucide="alert-triangle" class="w-3 h-3 text-amber-500"></i>
+                </div>
+              </div>
+            </div>
+            <h3 class="text-xl font-extrabold tracking-tight grad-text inline-block">Autonomy &amp; governance.</h3>
+            <p class="mt-3 text-sm text-[var(--ink-2)] leading-relaxed">
+              <span class="font-semibold text-[var(--ink)]">Wins on:</span> autonomy, agent sophistication, governance, dashboard, GitHub workflow, maturity, code-producing capability.
+            </p>
+            <p class="mt-2 text-xs text-[var(--ink-3)] italic">For experienced teams with Agentic AI know-how who want autonomy.</p>
+            <div class="mt-5 pt-5 border-t border-[var(--line)]">
+              <div class="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ink-4)] mb-3">Full 5-phase coverage</div>
+              <div class="flex flex-wrap gap-1.5">
+                <a href="https://github.com/BD-AI-SDLC/po-piie" target="_blank" rel="noreferrer" class="chip">po-piie</a>
+                <a href="https://github.com/BD-AI-SDLC/PIIE-Expert" target="_blank" rel="noreferrer" class="chip">expert-piie</a>
+                <a href="https://github.com/BD-AI-SDLC/deepscan" target="_blank" rel="noreferrer" class="chip">deepscan</a>
+                <a href="https://github.com/SinishaDjukic/worca-cc" target="_blank" rel="noreferrer" class="chip chip--cyan">worca-cc</a>
+                <a href="https://github.com/BD-AI-SDLC/qtea" target="_blank" rel="noreferrer" class="chip">QTea</a>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Coverage Pipeline -->
+        <div class="mt-16">
+          <div class="text-center max-w-2xl mx-auto">
+            <span class="eyebrow">Coverage at a glance</span>
+            <h3 class="mt-3 text-2xl md:text-3xl font-extrabold tracking-tight">What each <span class="grad-text">approach covers</span>.</h3>
+            <p class="mt-3 text-sm text-[var(--ink-3)] leading-relaxed">Five SDLC phases, left → right. Two lanes per phase show which tool each approach uses.</p>
+          </div>
+
+          <!-- Legend / Key -->
+          <div class="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-50 border border-cyan-200">
+              <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+              <span class="font-semibold text-cyan-800">Lightweight</span>
+              <span class="text-cyan-700/70 mono text-[10px]">Claude Code</span>
+            </span>
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--tint)] border border-[var(--line-2)]">
+              <span class="w-2 h-2 rounded-full bg-[var(--purple)]"></span>
+              <span class="font-semibold text-[var(--purple-d)]">Enterprise</span>
+              <span class="text-[var(--purple-d)]/70 mono text-[10px]">Claude Code + On-Prem</span>
+            </span>
+            <span class="inline-flex items-center gap-2 text-[var(--ink-4)]">
+              <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500"></i>
+              partial / caveat
+            </span>
+          </div>
+
+          <!-- Pipeline grid -->
+          <div class="phase-pipeline mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+
+            <!-- 01 Requirements -->
+            <article class="phase-card">
+              <div class="flex items-center justify-between">
+                <span class="num">01 · PHASE</span>
+                <span class="icon-wrap"><i data-lucide="file-text" class="w-4 h-4"></i></span>
+              </div>
+              <h4>Requirements</h4>
+
+              <div class="lane lane-light">
+                <div class="lane-label"><span class="dot"></span>Lightweight</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/BD-AI-SDLC/po-piie" target="_blank" rel="noreferrer" class="chip">po-piie</a>
+                </div>
+              </div>
+              <div class="lane lane-ent">
+                <div class="lane-label"><span class="dot"></span>Enterprise</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/BD-AI-SDLC/po-piie" target="_blank" rel="noreferrer" class="chip">po-piie</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- 02 Architecture -->
+            <article class="phase-card">
+              <div class="flex items-center justify-between">
+                <span class="num">02 · PHASE</span>
+                <span class="icon-wrap"><i data-lucide="compass" class="w-4 h-4"></i></span>
+              </div>
+              <h4>Architecture</h4>
+
+              <div class="lane lane-light">
+                <div class="lane-label"><span class="dot"></span>Lightweight</div>
+                <div class="lane-empty">
+                  <i data-lucide="corner-down-right" class="w-3 h-3 icon"></i>
+                  embedded in ClaudBoard
+                </div>
+              </div>
+              <div class="lane lane-ent">
+                <div class="lane-label"><span class="dot"></span>Enterprise</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/BD-AI-SDLC/PIIE-Expert" target="_blank" rel="noreferrer" class="chip">expert-piie</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- 03 Context -->
+            <article class="phase-card">
+              <div class="flex items-center justify-between">
+                <span class="num">03 · PHASE</span>
+                <span class="icon-wrap"><i data-lucide="scan-search" class="w-4 h-4"></i></span>
+              </div>
+              <h4>Context</h4>
+
+              <div class="lane lane-light">
+                <div class="lane-label"><span class="dot"></span>Lightweight</div>
+                <div class="lane-empty">
+                  <i data-lucide="corner-down-right" class="w-3 h-3 icon"></i>
+                  embedded in ClaudBoard
+                </div>
+              </div>
+              <div class="lane lane-ent">
+                <div class="lane-label"><span class="dot"></span>Enterprise</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/BD-AI-SDLC/deepscan" target="_blank" rel="noreferrer" class="chip">deepscan</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- 04 Orchestrator -->
+            <article class="phase-card">
+              <div class="flex items-center justify-between">
+                <span class="num">04 · PHASE</span>
+                <span class="icon-wrap"><i data-lucide="workflow" class="w-4 h-4"></i></span>
+              </div>
+              <h4>Orchestrator</h4>
+
+              <div class="lane lane-light">
+                <div class="lane-label"><span class="dot"></span>Lightweight</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/BD-AI-SDLC/claudboard" target="_blank" rel="noreferrer" class="chip chip--cyan">claudboard CLI</a>
+                  <a href="https://github.com/BD-AI-SDLC/claudboard-ui" target="_blank" rel="noreferrer" class="chip">claudboard UI</a>
+                </div>
+              </div>
+              <div class="lane lane-ent">
+                <div class="lane-label"><span class="dot"></span>Enterprise</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/SinishaDjukic/worca-cc" target="_blank" rel="noreferrer" class="chip chip--cyan">worca-cc</a>
+                  <a href="https://docs.worca.dev/introduction/watch/" target="_blank" rel="noreferrer" class="chip">Watch</a>
+                </div>
+              </div>
+            </article>
+
+            <!-- 05 Testing -->
+            <article class="phase-card">
+              <div class="flex items-center justify-between">
+                <span class="num">05 · PHASE</span>
+                <span class="icon-wrap"><i data-lucide="flask-conical" class="w-4 h-4"></i></span>
+              </div>
+              <h4>Testing</h4>
+
+              <div class="lane lane-light">
+                <div class="lane-label"><span class="dot"></span>Lightweight</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/BD-AI-SDLC/qtea" target="_blank" rel="noreferrer" class="chip">QTea</a>
+                  <span class="lane-warn" title="Headless-only mode in Lightweight"><i data-lucide="alert-triangle" class="w-2.5 h-2.5"></i>headless</span>
+                </div>
+              </div>
+              <div class="lane lane-ent">
+                <div class="lane-label"><span class="dot"></span>Enterprise</div>
+                <div class="lane-chips">
+                  <a href="https://github.com/BD-AI-SDLC/qtea" target="_blank" rel="noreferrer" class="chip">QTea</a>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ TOOLS DETAIL ═════════ -->
+    <section id="tools" class="py-20 md:py-24">
+      <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="eyebrow">Details about tools</span>
+          <h2 class="h-section mt-3">Six tools. <span class="grad-text">One pipeline.</span></h2>
+          <p class="lede mt-5">What each tool does, why it exists, when to use it — plus interface, deployment, and the single point of contact.</p>
+        </div>
+        <div id="tool-grid" class="mt-12 grid md:grid-cols-2 gap-5"></div>
+      </div>
+    </section>
+
+    <!-- ═════════ HOW IT WORKS ═════════ -->
+    <section id="how-it-works" class="py-20 md:py-24 bg-[var(--bg-soft)] relative overflow-hidden">
+      <div class="halo w-[480px] h-[480px] -top-32 -right-32" style="background:rgba(123,76,255,.12)"></div>
+
+      <div class="relative max-w-6xl mx-auto px-6 md:px-10">
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="eyebrow">How it works</span>
+          <h2 class="h-section mt-3">Inside the <span class="grad-text">orchestrator</span>.</h2>
+          <p class="lede mt-5">
+            Nine specialised agents in three phases. A Jira ticket goes in, a reviewed PR comes out — governance enforced at every step, not requested.
+          </p>
+          <p class="mt-3 text-xs text-[var(--ink-4)]">
+            Illustrated with the <a href="https://docs.worca.dev/introduction/how-it-works/" target="_blank" rel="noreferrer" class="underline decoration-dotted hover:text-[var(--purple-d)]">WORCA pipeline</a> &mdash; the Enterprise orchestrator. ClaudBoard (Lightweight) runs the same shape with fewer stages.
+          </p>
+        </div>
+
+        <!-- Three phase columns -->
+        <div class="mt-12 grid md:grid-cols-3 gap-5">
+
+          <!-- PLAN -->
+          <article class="card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-700">Phase 1 · Plan</span>
+              <span class="icon-wrap" style="width:30px;height:30px"><i data-lucide="map" class="w-4 h-4 text-cyan-700"></i></span>
+            </div>
+            <h3 class="text-base font-extrabold tracking-tight mb-4">Set up the work</h3>
+
+            <ol class="flex-grow">
+              <li class="stage-item">
+                <span class="stage-num">01</span>
+                <div>
+                  <div class="stage-name">Preflight</div>
+                  <div class="stage-desc">Validates the environment</div>
+                </div>
+              </li>
+              <li class="stage-item">
+                <span class="stage-num">02</span>
+                <div>
+                  <div class="stage-name">Planner</div>
+                  <div class="stage-desc">Explores code, writes the plan</div>
+                </div>
+              </li>
+              <li class="stage-item stage-optional">
+                <span class="stage-num">03</span>
+                <div>
+                  <div class="stage-name">Plan Reviewer<span class="opt-pill">optional</span></div>
+                  <div class="stage-desc">Audits the plan</div>
+                </div>
+              </li>
+            </ol>
+          </article>
+
+          <!-- BUILD · featured -->
+          <article class="glow-frame card p-6 relative overflow-hidden flex flex-col">
+            <div class="halo w-48 h-48 -top-16 -right-16" style="background:rgba(123,76,255,.18)"></div>
+            <div class="relative flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--purple-d)]">Phase 2 · Build</span>
+              <span class="icon-wrap" style="width:30px;height:30px;background:linear-gradient(135deg,#7b4cff,#06b6d4);border:0;color:#fff"><i data-lucide="hammer" class="w-4 h-4"></i></span>
+            </div>
+            <h3 class="relative text-base font-extrabold tracking-tight mb-4">Ship the change</h3>
+
+            <ol class="relative flex-grow">
+              <li class="stage-item">
+                <span class="stage-num stage-num-accent">04</span>
+                <div>
+                  <div class="stage-name">Coordinator</div>
+                  <div class="stage-desc">Splits the plan into tasks (beads)</div>
+                </div>
+              </li>
+              <li class="stage-item">
+                <span class="stage-num stage-num-accent">05</span>
+                <div>
+                  <div class="stage-name">Implementer</div>
+                  <div class="stage-desc">Builds each task, test-first</div>
+                </div>
+              </li>
+              <li class="stage-item">
+                <span class="stage-num stage-num-accent">06</span>
+                <div>
+                  <div class="stage-name">Tester</div>
+                  <div class="stage-desc">Runs tests, collects proof</div>
+                </div>
+              </li>
+            </ol>
+          </article>
+
+          <!-- SHIP -->
+          <article class="card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#0e7490]">Phase 3 · Ship</span>
+              <span class="icon-wrap" style="width:30px;height:30px"><i data-lucide="rocket" class="w-4 h-4 text-[#0e7490]"></i></span>
+            </div>
+            <h3 class="text-base font-extrabold tracking-tight mb-4">Land &amp; learn</h3>
+
+            <ol class="flex-grow">
+              <li class="stage-item">
+                <span class="stage-num">07</span>
+                <div>
+                  <div class="stage-name">Reviewer</div>
+                  <div class="stage-desc">Reviews code and conventions</div>
+                </div>
+              </li>
+              <li class="stage-item">
+                <span class="stage-num">08</span>
+                <div>
+                  <div class="stage-name">Guardian</div>
+                  <div class="stage-desc">Commits, opens the PR</div>
+                </div>
+              </li>
+              <li class="stage-item stage-optional">
+                <span class="stage-num">09</span>
+                <div>
+                  <div class="stage-name">Learner<span class="opt-pill">optional</span></div>
+                  <div class="stage-desc">Retrospective</div>
+                </div>
+              </li>
+            </ol>
+          </article>
+        </div>
+
+        <!-- Governance callout -->
+        <div class="mt-8 card p-6" style="background:linear-gradient(135deg, var(--bg) 0%, var(--tint) 100%); border-color: var(--line-2)">
+          <div class="flex items-start gap-3 mb-4">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#7b4cff] to-fuchsia-500 text-white shrink-0">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <div class="font-extrabold text-[15px]">Governance baked in</div>
+              <div class="text-xs text-[var(--ink-3)] leading-relaxed">Hooks run on <span class="font-semibold text-[var(--ink-2)]">every tool call</span> &mdash; control is enforced, not hoped for.</div>
+            </div>
+          </div>
+          <ul class="grid sm:grid-cols-2 gap-3 text-[13px] text-[var(--ink-2)]">
+            <li class="flex items-start gap-2.5">
+              <i data-lucide="git-commit-horizontal" class="w-4 h-4 mt-0.5 text-[var(--purple)] shrink-0"></i>
+              <span><span class="font-semibold text-[var(--ink)]">Single committer</span> &mdash; only Guardian executes git commits</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <i data-lucide="ban" class="w-4 h-4 mt-0.5 text-[var(--purple)] shrink-0"></i>
+              <span><span class="font-semibold text-[var(--ink)]">Dangerous ops blocked</span> &mdash; no force-push, env writes, destructive commands</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <i data-lucide="octagon-x" class="w-4 h-4 mt-0.5 text-[var(--purple)] shrink-0"></i>
+              <span><span class="font-semibold text-[var(--ink)]">Test gate halts</span> &mdash; pipeline stops after repeated failures</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <i data-lucide="lock" class="w-4 h-4 mt-0.5 text-[var(--purple)] shrink-0"></i>
+              <span><span class="font-semibold text-[var(--ink)]">Scoped tools</span> &mdash; each agent restricted to permitted tools and subagents</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═════════ JOIN THE BUILD ═════════ -->
+    <section id="start" class="py-20 md:py-24 bg-[var(--bg-soft)] relative overflow-hidden">
+      <div class="halo w-[520px] h-[520px] -top-32 -right-32" style="background:rgba(123,76,255,.15)"></div>
+      <div class="halo w-[420px] h-[420px] -bottom-24 -left-24" style="background:rgba(34,211,238,.15)"></div>
+
+      <div class="relative max-w-6xl mx-auto px-6 md:px-10">
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="eyebrow">Join the build</span>
+          <h2 class="h-section mt-3">Built with you. <span class="grad-text">Shape what's next.</span></h2>
+          <p class="lede mt-5">
+            Six tools. Six maintainers. One Teams channel.
+            Your usage <span class="text-[var(--ink)] font-semibold">is</span> the roadmap — drop in,
+            ask, demo, push back, ship a PR.
+          </p>
+        </div>
+
+        <div class="mt-12 max-w-md mx-auto">
+          <!-- TALK · featured -->
+          <article class="glow-frame card p-6 flex flex-col relative overflow-hidden">
+            <div class="halo w-48 h-48 -top-16 -right-16" style="background:rgba(123,76,255,.2)"></div>
+            <div class="relative flex items-center justify-between mb-4">
+              <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#7b4cff] to-fuchsia-500 text-white">
+                <i data-lucide="messages-square" class="w-5 h-5"></i>
+              </span>
+              <span class="text-[10px] font-extrabold mono text-[var(--purple-d)]">TALK</span>
+            </div>
+            <h3 class="relative text-lg font-extrabold tracking-tight">Join the Teams channel</h3>
+            <p class="relative mt-2 text-[13px] text-[var(--ink-2)] leading-relaxed flex-grow">
+              All maintainers live here. Drop ideas, demo your setup, debug with the team, vote on what ships next. No triage queue — direct line to the people building each tool.
+            </p>
+            <a href="https://teams.microsoft.com/l/team/19%3A4GUdU2vrTcqWG0ilGLL-XKUjavRsugbNXdAiXb9rdco1%40thread.tacv2/conversations?groupId=4429dbb6-75fd-450c-ac69-0e588f97dbf7&tenantId=0ae51e19-07c8-4e4b-bb6d-648ee58410f4"
+               target="_blank" rel="noreferrer"
+               class="btn btn-primary group mt-5 w-full justify-center">
+              <i data-lucide="messages-square" class="w-[18px] h-[18px]"></i>
+              <span>Join our Community on Teams</span>
+              <i data-lucide="arrow-up-right" class="w-[18px] h-[18px] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
+            </a>
+          </article>
+        </div>
+
+        <p class="mt-10 text-center text-xs text-[var(--ink-4)]">
+          <i data-lucide="info" class="w-3.5 h-3.5 inline -mt-0.5"></i>
+          MIT-licensed components · works with Claude Code · cloud or on-prem LLMs · public roadmap on GitHub
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═════════ FOOTER ═════════ -->
+  <footer class="border-t border-[var(--line)] py-12 bg-white">
+    <div class="max-w-6xl mx-auto px-6 md:px-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div>
+        <div class="flex items-center gap-3">
+          <img src="milewa-m.png" alt="MILEWA logo" class="h-10 w-auto" />
+          <span class="inline-flex items-center px-1.5 h-5 rounded-md bg-[var(--tint)] border border-[var(--line)] text-[10px] mono font-semibold text-[var(--purple-d)]">v0.1.0</span>
+        </div>
+        <p class="mt-3 text-xs text-[var(--ink-3)] leading-relaxed">Built at Bosch BD/SW · open-sourced for teams that ship.</p>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ink-2)] mb-3">Tools</div>
+        <ul class="space-y-2 text-xs text-[var(--ink-3)]">
+          <li><a href="https://github.com/BD-AI-SDLC/po-piie" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">PO-PIIE</a></li>
+          <li><a href="https://github.com/BD-AI-SDLC/PIIE-Expert" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">EXPERT-PIIE</a></li>
+          <li><a href="https://github.com/BD-AI-SDLC/deepscan" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">DeepScan</a></li>
+          <li><a href="https://github.com/BD-AI-SDLC/claudboard" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">ClaudBoard</a></li>
+          <li><a href="https://github.com/SinishaDjukic/worca-cc" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">WORCA</a></li>
+          <li><a href="https://github.com/BD-AI-SDLC/qtea" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">QTea</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ink-2)] mb-3">Resources</div>
+        <ul class="space-y-2 text-xs text-[var(--ink-3)]">
+          <li><a href="https://github.com/BD-AI-SDLC" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">GitHub · BD-AI-SDLC</a></li>
+          <li><a href="https://docs.worca.dev/introduction/watch/" target="_blank" rel="noreferrer" class="hover:text-[var(--ink)] transition-colors">WORCA Demo</a></li>
+          <li><a href="#approaches" class="hover:text-[var(--ink)] transition-colors">Approaches</a></li>
+          <li><a href="#tools" class="hover:text-[var(--ink)] transition-colors">Tools</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ink-2)] mb-3">Acronyms</div>
+        <ul class="space-y-1.5 text-xs text-[var(--ink-3)]">
+          <li><span class="text-[var(--ink)] font-semibold">PIIE</span> · Pre-Implementation Intelligence Engine</li>
+          <li><span class="text-[var(--ink)] font-semibold">WORCA</span> · WORkflow + Cloud Agents</li>
+          <li><span class="text-[var(--ink)] font-semibold">QTea</span> · QA + WORCA-T</li>
+          <li><span class="text-[var(--ink)] font-semibold">ADR</span> · Architecture Decision Record</li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-6 md:px-10 mt-10 pt-6 border-t border-[var(--line)] flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="text-[11px] text-[var(--ink-4)]">© 2026 · MILEWA · AI-Native SDLC Framework</div>
+      <div class="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-[var(--line)] bg-[var(--bg-soft)] text-[12px] font-semibold text-[var(--ink-2)]" title="Open-sourced inside Bosch by BD/XD-SW">
+        <span class="w-2 h-2 rounded-full bg-gradient-to-br from-[#7b4cff] via-fuchsia-500 to-cyan-500 shrink-0"></span>
+        <span>Built at <span class="text-[var(--ink)] font-bold mono text-[11px]">BD/XD-SW</span> · for Bosch</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═════════ DATA + RENDER ═════════ -->
+  <script>
+    const TOOLS = [
+      {
+        slug:"po-piie", name:"PO-PIIE", accent:"acc-po",
+        phase:"Requirements Engineering", maturity:"pilot", maturityLabel:"Pilot",
+        link:{ label:"GH: po-piie", url:"https://github.com/BD-AI-SDLC/po-piie" },
+        what:"AI tool used by PO/PM/SM for writing requirements of higher quality and greater precision.",
+        why:"Requirement tickets are often poorly written, blocking implementers who rely on ticket text alone. PO-PIIE standardizes ticket descriptions using a Spec-Driven Requirements approach.",
+        when:"During ticket creation or refinement. Output saved in Jira tickets, reused by other AI tools for implementation or Confluence docs.",
+        iface:{ headless:false, ui:true },
+        deploy:{ Win:"on", Lin:"off", Mac:"on", Cloud:"off" },
+        contacts:[
+          { name:"Danicic Dragan", dept:"BD/SWD-WDE11" },
+          { name:"Nikolic Lazar",  dept:"BD/SWD-ARC9" },
+        ],
+      },
+      {
+        slug:"expert-piie", name:"EXPERT-PIIE", accent:"acc-expert",
+        phase:"Technical Grooming & Architecture", maturity:"beta", maturityLabel:"Beta",
+        link:{ label:"GH: PIIE-Expert", url:"https://github.com/BD-AI-SDLC/PIIE-Expert" },
+        what:"AI workflow tool for implementing Spec-Driven Development in code repositories.",
+        why:"Autonomous development driven by an initial conversation between developer and AI. Specified requirements are passed to dynamically generated agents — configurable and scalable.",
+        when:"When requirements are not sufficiently clear and you want a deployable cloud-based solution.",
+        iface:{ headless:false, ui:true },
+        deploy:{ Win:"on", Lin:"on", Mac:"on", Cloud:"on" },
+        contacts:[{ name:"Brkovic Tomica", dept:"BD/SWD-ARC9" }],
+      },
+      {
+        slug:"deepscan", name:"DeepScan", accent:"acc-deepscan",
+        phase:"Context Onboarding", maturity:"beta", maturityLabel:"Beta",
+        link:{ label:"GH: deepscan", url:"https://github.com/BD-AI-SDLC/deepscan" },
+        what:"Scans code repositories and generates architecture knowledge, dependency maps, documentation, and reusable context for AI agents.",
+        why:"Helps developers and AI agents understand complex software ecosystems faster and use relevant project knowledge throughout the SDLC.",
+        when:"Before development on an existing codebase, especially when architecture, dependencies, or domain knowledge are unclear.",
+        iface:{ headless:false, ui:true },
+        deploy:{ Win:"on", Lin:"on", Mac:"on", Cloud:"off" },
+        contacts:[{ name:"Dimitrov Nikolay", dept:"BD/SWD-BEA1" }],
+      },
+      {
+        slug:"claudboard", name:"ClaudBoard", accent:"acc-claud",
+        phase:"Orchestrator · Lightweight", maturity:"beta", maturityLabel:"Beta",
+        link:{ label:"GH: claudboard CLI", url:"https://github.com/BD-AI-SDLC/claudboard" },
+        what:"Claude Code plugin that auto-generates .claude/ artifacts (CLAUDE.md, rules, skills, workflows) from a deep scan of any brownfield repo.",
+        why:"Hand-writing .claude/ is slow and produces generic boilerplate. ClaudBoard reads the actual stack, patterns, and conventions and emits artifacts tailored to that codebase.",
+        when:"Onboarding Claude Code to an existing repo, refreshing artifacts as it evolves, or rolling consistent AI-assisted workflows across many repos.",
+        iface:{ headless:true, ui:true },
+        deploy:{ Win:"warn", Lin:"on", Mac:"on", Cloud:"off" },
+        contacts:[
+          { name:"Salikutluk Fatih", dept:"BD/SWD-ARC5" },
+          { name:"Lukovic Perisa",   dept:"BD/SWD-ARC9" },
+          { name:"Pejic Branislav",  dept:"BD/SWD-DOE8" },
+        ],
+      },
+      {
+        slug:"worca", name:"WORCA", accent:"acc-worca",
+        phase:"Orchestrator · Enterprise", maturity:"beta", maturityLabel:"Beta",
+        link:{ label:"GH: worca-cc", url:"https://github.com/SinishaDjukic/worca-cc" },
+        what:"AI orchestration framework for strict software development workflows with cloud and on-prem LLMs, and per-feature cost tracking.",
+        why:"Autonomous software development with minimal human involvement — a \"human-on-the-gate\" paradigm where engineers approve at checkpoints.",
+        when:"You need complete transparency into every AI decision and action, and strict adherence to internal development processes and regulations.",
+        iface:{ headless:true, ui:true },
+        deploy:{ Win:"on", Lin:"on", Mac:"on", Cloud:"on" },
+        contacts:[{ name:"Djukic Sinisha", dept:"BD/XD-SW BD/RBR-BG" }],
+      },
+      {
+        slug:"qtea", name:"QTea", accent:"acc-qtea",
+        phase:"Testing", maturity:"alpha", maturityLabel:"Alpha",
+        link:{ label:"GH: qtea", url:"https://github.com/BD-AI-SDLC/qtea" },
+        what:"Autonomous QA pipeline. Takes a requirement (Jira ticket or spec) and delivers a fully planned, executed, and reported test cycle — zero manual handoffs.",
+        why:"Replaces work that normally spans manual QA, SDETs, and triage teams. One pipeline: test design → creation → execution → bug filing → reporting, fully traced.",
+        when:"A new ticket or change lands and you want test coverage generated, executed, and reported in a single automated pass — results linked in Jira/Xray.",
+        iface:{ headless:true, ui:"warn" },
+        deploy:{ Win:"on", Lin:"off", Mac:"off", Cloud:"off" },
+        contacts:[{ name:"Ettinger Sagui", dept:"BD/SWD-QTE7" }],
+      },
+    ];
+
+    const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+    const deployBadge = (s, l) =>
+      s === "on"   ? `<span class="badge badge--on">${l} ✓</span>` :
+      s === "warn" ? `<span class="badge badge--warn"><i data-lucide="alert-triangle" class="w-3 h-3"></i>${l}</span>` :
+                     `<span class="badge badge--off">${l}</span>`;
+    const ifaceBadge = (s, l) =>
+      s === true   ? `<span class="badge badge--on"><i data-lucide="check" class="w-3 h-3"></i>${l}</span>` :
+      s === "warn" ? `<span class="badge badge--warn"><i data-lucide="alert-triangle" class="w-3 h-3"></i>${l}</span>` :
+                     `<span class="badge badge--off"><i data-lucide="x" class="w-3 h-3"></i>${l}</span>`;
+
+    function renderTools() {
+      document.getElementById("tool-grid").innerHTML = TOOLS.map(t => {
+        const contacts = t.contacts.map(c =>
+          `<div>${esc(c.name)} <span class="mono text-[11px] text-[var(--ink-4)]">(${esc(c.dept)})</span></div>`).join("");
+
+        return `
+        <article class="card card-hover tool-card ${t.accent}">
+          <span class="accent"></span>
+          <header class="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <div class="text-[10px] font-bold uppercase tracking-[0.14em]">${esc(t.phase)}</div>
+              <div class="flex items-center gap-2 mt-1">
+                <h3 class="text-[var(--ink)]">${esc(t.name)}</h3>
+                <span class="mat-pill mat-${t.maturity}">${esc(t.maturityLabel)}</span>
+              </div>
+            </div>
+            <a href="${t.link.url}" target="_blank" rel="noreferrer"
+               class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[var(--line)] hover:border-[var(--purple-l)] hover:bg-[var(--bg-soft)] text-[11px] font-semibold text-[var(--purple-d)] transition-all shrink-0">
+              <i data-lucide="github" class="w-3.5 h-3.5"></i>
+              <span>${esc(t.link.label)}</span>
+              <i data-lucide="arrow-up-right" class="w-3 h-3 text-[var(--ink-4)]"></i>
+            </a>
+          </header>
+
+          <div class="field"><div class="field-label" style="color:inherit">What</div><p>${esc(t.what)}</p></div>
+
+          <details class="tool-details">
+            <summary aria-label="Toggle ${esc(t.name)} details">
+              <span class="summary-label">Show details</span>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </summary>
+
+            <div class="tool-body">
+              <div class="field"><div class="field-label" style="color:inherit">Why</div><p>${esc(t.why)}</p></div>
+              <div class="field"><div class="field-label" style="color:inherit">When</div><p>${esc(t.when)}</p></div>
+
+              <div class="divider"></div>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <div class="field-label text-[var(--ink-4)]">Interface</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${ifaceBadge(t.iface.headless, "Headless")}
+                    ${ifaceBadge(t.iface.ui,       "UI")}
+                  </div>
+                </div>
+                <div>
+                  <div class="field-label text-[var(--ink-4)]">Deployment</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${deployBadge(t.deploy.Win,   "Win")}
+                    ${deployBadge(t.deploy.Lin,   "Lin")}
+                    ${deployBadge(t.deploy.Mac,   "Mac")}
+                    ${deployBadge(t.deploy.Cloud, "Cloud")}
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <div>
+                <div class="field-label text-[var(--ink-4)] inline-flex items-center gap-1.5"><i data-lucide="user-round" class="w-3 h-3"></i>Single point of contact</div>
+                <div class="text-[13px] text-[var(--ink-2)] leading-relaxed mt-1">${contacts}</div>
+              </div>
+            </div>
+          </details>
+        </article>`;
+      }).join("");
+    }
+
+    function copyCommand() {
+      const cmd   = document.getElementById("install-cmd").innerText.trim();
+      const label = document.getElementById("copy-label");
+      const icon  = document.getElementById("copy-icon");
+      navigator.clipboard.writeText(cmd).then(() => {
+        label.textContent = "Copied";
+        icon.setAttribute("data-lucide", "check");
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => {
+          label.textContent = "Copy";
+          icon.setAttribute("data-lucide", "copy");
+          if (window.lucide) lucide.createIcons();
+        }, 1500);
+      }).catch(() => {
+        label.textContent = "Press ⌘C";
+        setTimeout(() => { label.textContent = "Copy"; }, 1500);
+      });
+    }
+
+    function initNavHighlight() {
+      const links = Array.from(document.querySelectorAll(".nav-link"));
+      const idToLink = Object.fromEntries(links.map(l => [l.dataset.section, l]));
+      const sections = links.map(l => document.getElementById(l.dataset.section)).filter(Boolean);
+      const setActive = id => { links.forEach(l => l.classList.remove("active")); if (idToLink[id]) idToLink[id].classList.add("active"); };
+      const io = new IntersectionObserver(entries => {
+        const visible = entries.filter(e => e.isIntersecting).sort((a,b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      }, { rootMargin: "-80px 0px -55% 0px", threshold: [0, 0.25] });
+      sections.forEach(s => io.observe(s));
+    }
+
+    function initToolDisclosure() {
+      document.querySelectorAll(".tool-details").forEach(d => {
+        d.addEventListener("toggle", () => {
+          const label = d.querySelector(".summary-label");
+          if (label) label.textContent = d.open ? "Hide details" : "Show details";
+        });
+      });
+    }
+
+    renderTools();
+    if (window.lucide) lucide.createIcons();
+    initNavHighlight();
+    initToolDisclosure();
+  </script>
+</body>
+</html>
